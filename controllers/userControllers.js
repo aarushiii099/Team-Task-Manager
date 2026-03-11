@@ -239,7 +239,12 @@ const getAllUsers = async (req, res) => {
 
         const organisationName = req.body.organisationName;
 
-        const users = await User.find({organisationName: organisationName, isActive: true, isDeleted: false}).select(["name", "email", "role"])
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const users = await User.find({organisationName: organisationName, isActive: true, isDeleted: false})
+        .select(["name", "email", "role"])
+        .skip((page - 1) * limit).limit(limit);
         res.status(200).send(users)
 
     }

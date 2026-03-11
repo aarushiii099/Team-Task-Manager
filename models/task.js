@@ -18,4 +18,9 @@ var taskSchema = new mongoose.Schema({
 { timestamps: true }
 )
 
+    taskSchema.index({ projectId: 1 });
+    taskSchema.index({ assignTo: 1 });
+    taskSchema.index({ status: 1 });
+    taskSchema.index({ projectId: 1, status: 1 });
+
 module.exports = mongoose.model("task", taskSchema)

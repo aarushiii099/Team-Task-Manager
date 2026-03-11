@@ -25,6 +25,8 @@ const getProjectsList = async (req, res) => {
 
         const organisationName = req.body.organisationName;
         const userId = req.query.userId;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
 
         const criteria = {
 
@@ -37,7 +39,11 @@ const getProjectsList = async (req, res) => {
             isDeleted: false
         }
 
-        const projectList = await Project.find(criteria).select(["projectName", "description", "assignTo", "organisationName"]).sort({ createdAt: -1 });;
+        const projectList = await Project.find(criteria)
+        .select(["projectName", "description", "assignTo", "organisationName"])
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit).limit(limit);
+        res.status(200).send(users);;
         res.status(200).send(projectList);
 
     }

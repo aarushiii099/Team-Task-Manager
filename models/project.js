@@ -14,5 +14,7 @@ var projectSchema = new mongoose.Schema({
 { timestamps: true }
 
 )
+    projectSchema.index({ organisationId: 1 });
+    projectSchema.index({ assignTo: 1 });
 
 module.exports = mongoose.model("project", projectSchema)

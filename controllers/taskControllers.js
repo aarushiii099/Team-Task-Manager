@@ -61,6 +61,8 @@ const getTaskListFiltered = async (req, res) => {
     try{
 
         const payload = req.body;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
 
         const criteria = {
 
@@ -72,7 +74,8 @@ const getTaskListFiltered = async (req, res) => {
 
         }
 
-        const tasks = await Task.find(criteria);
+        const tasks = await Task.find(criteria)
+        .skip((page - 1) * limit).limit(limit);
 
         res.status(200).send(tasks)
 
