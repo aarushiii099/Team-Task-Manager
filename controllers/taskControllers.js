@@ -1,5 +1,6 @@
 const Task = require("../models/task");
-const Project = require("../models/project")
+const Project = require("../models/project");
+const task = require("../models/task");
 
 const getProjectMembers = async (req, res) => {
 
@@ -99,11 +100,132 @@ const getAllTasksProject = async (req, res) => {
     }
 }
 
+const getDashboardOverview = async (req, res) => {
+
+    try{
+
+        const userId = req.body.userId;
+        const organisationName = req.body.organisationName;
+
+        const projectCount = await Project.find({ assignTo: userId, organisationName: organisationName, isDeleted: false}).countDocuments();
+        const taskCount = await Task.find({ assignTo: userId, organisationName: organisationName, isDeleted: false}).countDocuments();
+        const taskCompletedCount = await Task.find({ assignTo: userId, organisationName: organisationName, isDeleted: false, status: 3}).countDocuments();
+
+        const tasks = await Task.aggregate([
+            {
+                $match: {
+                    assignTo: userId,
+                    organisationName: organisationName
+                }
+
+            },
+            {
+                $group: {
+                    "_id": "$typeTask",
+                    "count": { $sum: 1}
+                }
+            }
+        ])
+
+        const overDueCount = await Task.find({ 
+
+            assignTo: userId, 
+            isDeleted: false, 
+            organisationName: organisationName,
+            dueDate: { $lt: new Date()},
+            status: { $ne: 3}
+        
+        }).countDocuments();
+
+        const dataDashboard = {
+
+            projectCount: projectCount,
+            taskCount: taskCount,
+            taskCompletedCount: taskCompletedCount,
+            ToDo: 0,
+            InProgress: 0,
+            Done: 0,
+            OverDue: 0
+        }
+
+        tasks.forEach( t => {
+
+            // console.log("typeTask", t._id)
+
+            dataDashboard[t._id] = t.count;
+
+        })
+
+        dataDashboard.OverDue = overDueCount;
+
+        res.status(200).send(dataDashboard)
+
+    }
+
+    catch(error){
+        res.status(400).send({ message: error.message, stack: error.stack})
+    }
+}
+
+const getAnalyticsDashboard = async (req, res) => {
+
+    try{
+
+        const projectId = req.query.projectId;
+
+        const tasks = await Task.find({ projectId: projectId})
+
+        const taskCount = tasks.length;
+        const ToDoCount = tasks.filter( t => t.status == 1).length;
+        const InProgressCount = tasks.filter( t => t.status == 2).length;
+        const DoneCount = tasks.filter( t => t.status == 3).length;
+
+        const lowPriority = tasks.filter( t => t.priority == 1).length;
+        const mediumPriority = tasks.filter( t => t.priority == 2).length;
+        const highPriority = tasks.filter( t => t.priority == 3).length;
+
+        const analyticsData = {
+
+            Summary : {
+
+                taskCount: taskCount,
+                ToDoCount: ToDoCount,
+                InProgressCount: InProgressCount,
+                DoneCount: DoneCount
+            },
+
+            StatusDistribution: {
+
+                ToDoCount: ToDoCount,
+                InProgressCount: InProgressCount,
+                DoneCount: DoneCount
+            },
+            
+            PriorityDistribution: {
+
+                lowPriorityCount: lowPriority,
+                mediumPriorityCount: mediumPriority,
+                highPriorityCount: highPriority
+            }
+
+        }
+
+        res.status(200).send(analyticsData);
+
+    }
+
+    catch(error){
+        res.status(400).send({ message: error.message, stack: error.stack})
+    }
+}
+
 module.exports = {
 
     addTask,
     getProjectMembers,
     getTaskListFiltered,
-    getAllTasksProject
+    getAllTasksProject,
+    getDashboardOverview,
+    getAnalyticsDashboard
 
 }

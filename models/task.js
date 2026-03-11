@@ -9,10 +9,11 @@ var taskSchema = new mongoose.Schema({
     projectName: { type: String},
     organisationName: { type: String},
     assignTo: [{ type: String}],
-    status: { type: Number}, // 1 for To-do, 2 for InProgress, 3 for Done
+    status: { type: Number}, // 1 for ToDo, 2 for InProgress, 3 for Done
     typeTask : { type: String},
     priority: { type: Number}, //1 for low, 2 for medium, 3 for high
-    dueDate: { type: Date}
+    dueDate: { type: Date},
+    isDeleted: {type: Boolean, default: false}
     },
 { timestamps: true }
 )
