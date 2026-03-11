@@ -5,6 +5,8 @@ A RESTful backend API for a Team Project and Task Management System built using 
 This system allows organizations to manage teams, projects, and tasks with user roles, task tracking, and analytics.
 
 ---
+### All Screens
+![All Screens](allScreens.png)
 
 ## Features
 
