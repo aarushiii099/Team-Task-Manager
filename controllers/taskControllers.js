@@ -1,6 +1,8 @@
 const Task = require("../models/task");
 const Project = require("../models/project");
 const task = require("../models/task");
+const {getCache, setCache} = require("../utils/cache");
+const {clearAllCache} = require("../utils/cache")
 
 const getProjectMembers = async (req, res) => {
 
@@ -47,6 +49,8 @@ const addTask = async (req, res) => {
         const newTask = new Task(task);
         const savedTask = await newTask.save();
 
+        clearAllCache();//clears all cache
+
         res.status(200).send(savedTask);
 
     }
@@ -92,7 +96,23 @@ const getAllTasksProject = async (req, res) => {
     try{
 
         const projectId = req.query.projectId;
+
+        //caching
+        const key = "__express__" + req.originalUrl;
+        console.log("cacheKey", key);
+
+        const cachedTasks = getCache(key);
+
+        if(cachedTasks){
+
+            console.log("Cache Hit!");
+            return res.status(200).send(cachedTasks);
+        }
+
         const tasks = await Task.find({ projectId: projectId}).select(["taskName", "status", "priority", "dueDate"]);
+
+        //TTL: 1 minute
+        setCache(key, tasks, 60 * 1000)
 
         res.status(200).send(tasks)
 
