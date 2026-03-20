@@ -113,6 +113,7 @@ const getAllTasksProject = async (req, res) => {
 
         //TTL: 1 minute
         setCache(key, tasks, 60 * 1000)
+        //in memory caching//will reset on server restart
 
         res.status(200).send(tasks)
 
